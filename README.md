@@ -1,2 +1,23 @@
 # mvc6webapicompare
-Comparing a simple api build scenario: asp.net 5 webapi2 vs. mvc6
+
+The objective here is to compare building out a simple api application with these requirements:
+
+* http api gateway for performing CRUD operations on a socks drawer, where
+* socks can be added and removed, but always no more than 6 pairs of white socks at once
+* no authentication
+* MSSQL store
+* Autofac for DI
+* NHibernate for ORM
+* low-effort automated tests that deliver confidence around the api gateway and it's expected behaviours
+
+There will be two solutions:
+
+* The first using ASP.NET 5 and Web Api 2
+* The seconf using MVC6 built against Core/DNX where possible.
+
+A summary will be included with the aim of qualtifying:
+
+* Effort to setup and build out each solution
+* Tooling experience: pains, wins, etc
+* Clarity and mass of code: which is 'cleaner'?
+* Which of the external libraries worked or didn't work in MVC6 and what were the workarounds?
