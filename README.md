@@ -8,14 +8,14 @@ The objective here is to compare building out a simple api application with thes
 * MSSQL store
 * Autofac for DI
 * NHibernate for ORM
-* low-effort automated tests that deliver confidence around the api gateway and it's expected behaviours
+* low-effort automated tests that deliver confidence around the api gateway and it's expected behaviors
 
 There will be two solutions:
 
 * The first using ASP.NET 5 and Web Api 2
-* The seconf using MVC6 built against Core/DNX where possible.
+* The second using MVC6 built against Core/DNX where possible.
 
-A summary will be included with the aim of qualtifying:
+A summary will be included with the aim of quantifying:
 
 * Effort to setup and build out each solution
 * Tooling experience: pains, wins, etc
