@@ -12,7 +12,7 @@ The objective here is to compare building out a simple api application with thes
 
 There will be two solutions:
 
-* The first using ASP.NET 5 and Web Api 2
+* The first using ASP.NET 4.6 and Web Api 2
 * The second using MVC6 built against Core/DNX where possible.
 
 A summary will be included with the aim of quantifying:
