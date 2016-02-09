@@ -97,5 +97,26 @@ namespace SocksDrawer.Tests
         }
 
         // assert max white rule
+        [Fact]
+        public void GivenOneBlackAndSixWhiteSocks_WhenPostWhite_ThenFailWithForbidden()
+        {
+            var allPairsInStore = new[]
+            {
+                new SocksPair(SocksColour.Black),
+                new SocksPair(SocksColour.White),
+                new SocksPair(SocksColour.White),
+                new SocksPair(SocksColour.White),
+                new SocksPair(SocksColour.White),
+                new SocksPair(SocksColour.White),
+                new SocksPair(SocksColour.White),
+            };
+            allPairsInStore.ToList().ForEach(p => Session.Save(p));
+            Session.Flush();
+
+            var response = Post("api/drawer", new { colour = "white" });
+
+            response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+            response.BodyAs<string>().ShouldContain("6");
+        }
     }
 }
