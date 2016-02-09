@@ -2,6 +2,7 @@
 using System.Configuration;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using Autofac;
 using ControllerTests;
 using NHibernate;
@@ -82,7 +83,18 @@ namespace SocksDrawer.Tests
             Session.Query<SocksPair>().SingleOrDefault(p => p.Id == pairTwo.Id).ShouldBeNull();
         }
 
-        // get one
+        [Fact]
+        public void GivenOnePairInStore_WhenGetById_ThenReturnOnlyTheOne()
+        {
+            var pair = new SocksPair(SocksColour.White);
+            Session.Save(pair);
+            Session.Flush();
+
+            var response = Get($"/api/drawer/{pair.Id}").BodyAs<SocksPair>();
+
+            response.Colour.ShouldBe(pair.Colour);
+            response.Id.ShouldBe(pair.Id);
+        }
 
         // assert max white rule
     }
