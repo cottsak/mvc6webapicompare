@@ -6,6 +6,7 @@ using Microsoft.Owin;
 using Owin;
 using SocksDrawer;
 using SocksDrawer.Controllers;
+using SocksDrawer.Models;
 
 [assembly: OwinStartup(typeof(Startup))]
 
@@ -13,15 +14,9 @@ namespace SocksDrawer
 {
     public class Startup
     {
-        public void Configuration(IAppBuilder app)
+        internal static IContainer GetContainer()
         {
             var builder = new ContainerBuilder();
-
-            // STANDARD WEB API SETUP:
-
-            // Get your HttpConfiguration. In OWIN, you'll create one
-            // rather than using GlobalConfiguration.
-            var config = new HttpConfiguration();
 
             // Register your Web API controllers.
             builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
@@ -32,15 +27,29 @@ namespace SocksDrawer
             builder.RegisterType<ValuesGetter>()
                 .AsImplementedInterfaces()
                 .InstancePerLifetimeScope();
+            builder.RegisterType<SocksDrawerRepository>()
+                .AsImplementedInterfaces()
+                .InstancePerLifetimeScope();
 
-            var container = builder.Build();
-            config.DependencyResolver = new AutofacWebApiDependencyResolver(container);
+            //var container = builder.Build();
+            return builder.Build();
+        }
+
+        public void Configuration(IAppBuilder app)
+        {
+            // STANDARD WEB API SETUP:
+
+            // Get your HttpConfiguration. In OWIN, you'll create one
+            // rather than using GlobalConfiguration.
+            var config = new HttpConfiguration();
+
+            config.DependencyResolver = new AutofacWebApiDependencyResolver(GetContainer());
 
             // OWIN WEB API SETUP:
 
             // Register the Autofac middleware FIRST, then the Autofac Web API middleware,
             // and finally the standard Web API middleware.
-            app.UseAutofacMiddleware(container);
+            app.UseAutofacMiddleware(GetContainer());
             app.UseAutofacWebApi(config);
             app.UseWebApi(config);
 
