@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Web.Http;
+using NHibernate;
 using SocksDrawer.Models;
 
 namespace SocksDrawer.Controllers
 {
     public class DrawerController : ApiController
     {
-        private readonly ISocksDrawerRepository _socksDrawerRepository;
+        private readonly ISession _session;
 
-        public DrawerController(ISocksDrawerRepository socksDrawerRepository)
+        public DrawerController(ISession session)
         {
-            _socksDrawerRepository = socksDrawerRepository;
+            _session = session;
         }
 
         public class NewPairDto
@@ -19,11 +20,12 @@ namespace SocksDrawer.Controllers
         }
         public IHttpActionResult Post(NewPairDto newPairDto)
         {
-            var socksPair = new SocksPair((SocksColour)Enum.Parse(typeof(SocksColour), newPairDto.Colour, ignoreCase: true));
-            var pair = _socksDrawerRepository.AddPair(
-                socksPair);
+            var newSocksPair = new SocksPair((SocksColour)Enum.Parse(typeof(SocksColour), newPairDto.Colour, ignoreCase: true));
 
-            return Created($"api/drawer/{pair.Id}", pair);
+            _session.Save(newSocksPair);
+            _session.Flush();
+
+            return Created($"api/drawer/{newSocksPair.Id}", newSocksPair);
         }
     }
 }

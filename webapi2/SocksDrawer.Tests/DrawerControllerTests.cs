@@ -1,46 +1,58 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Configuration;
 using System.Linq;
 using System.Net;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Web.Http.Results;
+using Autofac;
 using ControllerTests;
-using NSubstitute;
+using NHibernate;
+using NHibernate.Linq;
 using Shouldly;
-using SocksDrawer.Controllers;
+using SocksDrawer.MigrateDb;
 using SocksDrawer.Models;
 using Xunit;
 
 namespace SocksDrawer.Tests
 {
-    public class DrawerControllerTests : ControllerTests.ApiControllerTestBase<ISocksDrawerRepository>
+    public class DrawerControllerTests : ApiControllerTestBase<ISession>
     {
-        public DrawerControllerTests() : base(new ApiTestSetup<ISocksDrawerRepository>(Startup.GetContainer(), WebApiConfig.Register))
+        static DrawerControllerTests()
         {
-          
+            // migrate db
+            Program.Main(new[] { ConfigurationManager.ConnectionStrings["store"].ConnectionString });
         }
 
+        public DrawerControllerTests() : base(new ApiTestSetup<ISession>(
+            Startup.GetContainer(),
+            WebApiConfig.Register,
+            builder =>
+            {
+                // changing the ISession to a singleton so that the two ISession Resolve() calls
+                // produce the same instance such that the transaction includes all test activity.
+                builder.Register(context => NhibernateConfig.CreateSessionFactory().OpenSession())
+                    .As<ISession>()
+                    .SingleInstance();
+            },
+            session => session.BeginTransaction(),
+            session => session.Transaction.Dispose(),   // tear down transaction to release locks
+            session =>
+            {
+                NhibernateConfig.CompleteRequest(session);
+                session.Clear();    // this is to ensure we don't get ghost results from the NHibernate cache  
+            }))
+        {
 
-        // can POST new pair into drawer and get 201 in return
+        }
+
         [Fact]
-        public void WhenPostNewPairToDrawer_ThenResponseIsCreatedAndSocksAreAddedToRepo()
+        public void WhenPostNewPairToDrawer_ThenResponseIsCreatedAndPairIsStored()
         {
             var response = Post("api/drawer", new { colour = "black" });
 
             // assert response is 201
             response.StatusCode.ShouldBe(HttpStatusCode.Created);
-            // assert id in location of response is not 0
-            //var createdResponse = response.BodyAs<CreatedNegotiatedContentResult<SocksPair>>();
-            //var idFromLocationUri = Regex.Match(createdResponse.Location.ToString(), @"/\d$").ToString();
-            //Convert.ToInt32(idFromLocationUri).ShouldNotBe(0);
-            //createdResponse.Content.Id.ShouldNotBe(0);
-            // assert colour is 'black'
-            response.BodyAs<SocksPair>().Colour.ShouldBe(SocksColour.Black);
-            // assert repo method was called
-            // todo: use real session
-            //Session.Received().AddPair(Arg.Any<SocksPair>());
+            // assert pair is in store
+            var pairFromStore = Session.Query<SocksPair>().Single();
+            pairFromStore.Id.ShouldNotBe(0);
+            pairFromStore.Colour.ShouldBe(SocksColour.Black);
         }
     }
 }

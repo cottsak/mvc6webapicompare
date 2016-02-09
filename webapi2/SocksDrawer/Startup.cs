@@ -3,6 +3,7 @@ using System.Web.Http;
 using Autofac;
 using Autofac.Integration.WebApi;
 using Microsoft.Owin;
+using NHibernate;
 using Owin;
 using SocksDrawer;
 using SocksDrawer.Controllers;
@@ -24,12 +25,18 @@ namespace SocksDrawer
             // Run other optional steps, like registering filters,
             // per-controller-type services, etc., then set the dependency resolver
             // to be Autofac.
-            builder.RegisterType<ValuesGetter>()
-                .AsImplementedInterfaces()
-                .InstancePerLifetimeScope();
-            builder.RegisterType<SocksDrawerRepository>()
-                .AsImplementedInterfaces()
-                .InstancePerLifetimeScope();
+            //builder.RegisterType<SocksDrawerRepository>()
+            //    .AsImplementedInterfaces()
+            //    .InstancePerLifetimeScope();
+            builder.Register(context => NhibernateConfig.CreateSessionFactory().OpenSession())
+               .As<ISession>()
+               .InstancePerLifetimeScope()
+               .OnRelease(session =>
+               {
+                   NhibernateConfig.CompleteRequest(session);
+
+                   session.Dispose();
+               });
 
             //var container = builder.Build();
             return builder.Build();

@@ -1,4 +1,6 @@
-﻿namespace SocksDrawer.Models
+﻿using FluentNHibernate.Mapping;
+
+namespace SocksDrawer.Models
 {
     public class SocksPair
     {
@@ -6,14 +8,24 @@
         {
             Colour = colour;
         }
+        protected SocksPair() { }
 
-        public int Id { get; private set; }
-        public SocksColour Colour { get; private set; }
+        public virtual int Id { get; protected set; }
+        public virtual SocksColour Colour { get; protected set; }
     }
 
     public enum SocksColour
     {
         Black,
         White,
+    }
+
+    public class SocksPairMap : ClassMap<SocksPair>
+    {
+        public SocksPairMap()
+        {
+            Id(x => x.Id).GeneratedBy.Identity();
+            Map(x => x.Colour);
+        }
     }
 }
