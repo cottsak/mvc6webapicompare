@@ -36,5 +36,15 @@ namespace SocksDrawer.Controllers
 
             return Created($"api/drawer/{newSocksPair.Id}", newSocksPair);
         }
+
+        public IHttpActionResult Delete(int id)
+        {
+            var pairToDeltete = _session.Query<SocksPair>().SingleOrDefault(p => p.Id == id);
+            if (pairToDeltete == null)
+                return NotFound();
+
+            _session.Delete(pairToDeltete);
+            return Ok();
+        }
     }
 }

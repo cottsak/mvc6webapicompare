@@ -33,11 +33,11 @@ namespace SocksDrawer.Tests
                     .SingleInstance();
             },
             session => session.BeginTransaction(),
-            session => session.Transaction.Dispose(),   // tear down transaction to release locks
+            session => session.Transaction.Dispose(), // tear down transaction to release locks
             session =>
             {
                 NhibernateConfig.CompleteRequest(session);
-                session.Clear();    // this is to ensure we don't get ghost results from the NHibernate cache  
+                session.Clear(); // this is to ensure we don't get ghost results from the NHibernate cache  
             }))
         { }
 
@@ -66,5 +66,24 @@ namespace SocksDrawer.Tests
             pairs.Count().ShouldBe(2);
             pairs.ShouldAllBe(p => p.Colour == SocksColour.Black);
         }
+
+        [Fact]
+        public void GivenTwoBlackPairsInStore_WhenDeleteOne_ThenOnlyOneRemains()
+        {
+            Session.Save(new SocksPair(SocksColour.Black));
+            var pairTwo = new SocksPair(SocksColour.Black);
+            Session.Save(pairTwo);
+            Session.Flush();
+
+            var response = Delete($"/api/drawer/{pairTwo.Id}");
+
+            response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Session.Query<SocksPair>().Count().ShouldBe(1);
+            Session.Query<SocksPair>().SingleOrDefault(p => p.Id == pairTwo.Id).ShouldBeNull();
+        }
+
+        // get one
+
+        // assert max white rule
     }
 }
