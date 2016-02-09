@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Net;
 using Autofac;
@@ -38,21 +39,32 @@ namespace SocksDrawer.Tests
                 NhibernateConfig.CompleteRequest(session);
                 session.Clear();    // this is to ensure we don't get ghost results from the NHibernate cache  
             }))
-        {
-
-        }
+        { }
 
         [Fact]
-        public void WhenPostNewPairToDrawer_ThenResponseIsCreatedAndPairIsStored()
+        public void WhenPostNewPairToDrawer_ThenResponseIsCreatedAndPairIsOnlyOneInStore()
         {
             var response = Post("api/drawer", new { colour = "black" });
 
             // assert response is 201
             response.StatusCode.ShouldBe(HttpStatusCode.Created);
-            // assert pair is in store
+            // assert pair is in store by itself
             var pairFromStore = Session.Query<SocksPair>().Single();
             pairFromStore.Id.ShouldNotBe(0);
             pairFromStore.Colour.ShouldBe(SocksColour.Black);
+        }
+
+        [Fact]
+        public void GivenTwoBlackPairsInStore_WhenGetAllPairs_ThenTwoAreReturned()
+        {
+            var twoPairs = new[] { new SocksPair(SocksColour.Black), new SocksPair(SocksColour.Black), };
+            twoPairs.ToList().ForEach(p => Session.Save(p));
+            Session.Flush();
+
+            var pairs = Get("api/drawer/socks").BodyAs<IEnumerable<SocksPair>>();
+
+            pairs.Count().ShouldBe(2);
+            pairs.ShouldAllBe(p => p.Colour == SocksColour.Black);
         }
     }
 }

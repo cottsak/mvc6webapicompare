@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Web.Http;
 using NHibernate;
+using NHibernate.Linq;
 using SocksDrawer.Models;
 
 namespace SocksDrawer.Controllers
@@ -12,6 +15,12 @@ namespace SocksDrawer.Controllers
         public DrawerController(ISession session)
         {
             _session = session;
+        }
+
+        [Route("api/drawer/socks")]
+        public IEnumerable<SocksPair> Get()
+        {
+            return _session.Query<SocksPair>().ToList();
         }
 
         public class NewPairDto
