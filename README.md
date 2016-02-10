@@ -22,3 +22,8 @@ A summary will be included with the aim of quantifying:
 * Clarity and mass of code: which is 'cleaner'?
 * Which of the external libraries worked or didn't work in MVC6 and what were the workarounds?
 * Is there current ASP.NET 5 / MVC6 release "production ready" according to Microsoft
+
+## TODO
+
+* authentication
+* [VSCode](https://code.visualstudio.com/) tooling comparason for these projects
