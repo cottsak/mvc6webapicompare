@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using Autofac;
 using ControllerTests;
 using NHibernate;
@@ -16,20 +14,18 @@ namespace SocksDrawer.Tests
 {
     public class DrawerControllerTests : ApiControllerTestBase<ISession>
     {
-        static DrawerControllerTests()
-        {
-            // migrate db
-            Program.Main(new[] { ConfigurationManager.ConnectionStrings["store"].ConnectionString });
-        }
-
         public DrawerControllerTests() : base(new ApiTestSetup<ISession>(
             Startup.GetContainer(),
             WebApiConfig.Register,
             builder =>
             {
+                var conn = new LocalDb().OpenConnection();
+                // migrate empty db
+                Program.Main(new[] { conn.ConnectionString });
+
                 // changing the ISession to a singleton so that the two ISession Resolve() calls
                 // produce the same instance such that the transaction includes all test activity.
-                builder.Register(context => NhibernateConfig.CreateSessionFactory().OpenSession())
+                builder.Register(context => NhibernateConfig.CreateSessionFactory(conn.ConnectionString).OpenSession())
                     .As<ISession>()
                     .SingleInstance();
             },
@@ -96,7 +92,6 @@ namespace SocksDrawer.Tests
             response.Id.ShouldBe(pair.Id);
         }
 
-        // assert max white rule
         [Fact]
         public void GivenOneBlackAndSixWhiteSocks_WhenPostWhite_ThenFailWithForbidden()
         {
