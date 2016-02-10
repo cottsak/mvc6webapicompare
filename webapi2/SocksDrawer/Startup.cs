@@ -25,9 +25,6 @@ namespace SocksDrawer
             // Run other optional steps, like registering filters,
             // per-controller-type services, etc., then set the dependency resolver
             // to be Autofac.
-            //builder.RegisterType<SocksDrawerRepository>()
-            //    .AsImplementedInterfaces()
-            //    .InstancePerLifetimeScope();
             builder.Register(context => NhibernateConfig.CreateSessionFactory().OpenSession())
                .As<ISession>()
                .InstancePerLifetimeScope()
