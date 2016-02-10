@@ -3,12 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
+using NHibernate;
 
 namespace SocksDrawer.Mvc6.Controllers
 {
     [Route("api/[controller]")]
     public class ValuesController : Controller
     {
+        private readonly ISession _session;
+
+        public ValuesController(ISession session)
+        {
+            _session = session;
+        }
+
         // GET: api/values
         [HttpGet]
         public IEnumerable<string> Get()
