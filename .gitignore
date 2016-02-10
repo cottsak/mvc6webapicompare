@@ -3,8 +3,9 @@
 *.ncrunchproject
 /*.ncrunchsolution
 *_NCrunch*
-*/.vs
+**/.vs
 */packages
 **/bin
 **/obj
 *.ncrunchsolution
+*project.lock.json
