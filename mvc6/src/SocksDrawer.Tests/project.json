@@ -1,0 +1,29 @@
+﻿{
+  "version": "1.0.0-*",
+  "description": "SocksDrawer.Tests Class Library",
+  "authors": [ "mattk" ],
+  "tags": [ "" ],
+  "projectUrl": "",
+  "licenseUrl": "",
+  "dependencies": {
+    "Shouldly": "2.6.0",
+    "xunit": "2.1.0",
+    "Autofac.Extensions.DependencyInjection": "4.0.0-rc1-177",
+    "mk.ControllerTests": "0.2.26",
+    "NHibernate": "4.0.4.4000",
+    "xunit.runner.dnx": "2.1.0-rc1-build204",
+    "SocksDrawer.Mvc6": "",
+    "Microsoft.Dnx.Runtime": "1.0.0-rc1-final"
+  },
+  "commands": {
+    "test": "xunit.runner.dnx"
+  },
+
+  "frameworks": {
+    "dnx451": {
+      "frameworkAssemblies": {
+        "System.Data": "4.0.0.0"
+      }
+    }
+  }
+}

@@ -6,9 +6,9 @@ using SocksDrawer.Mvc6.Models;
 
 namespace SocksDrawer.Mvc6
 {
-    class NhibernateConfig
+    public class NhibernateConfig
     {
-        internal static ISessionFactory CreateSessionFactory(string connectionString)
+        public static ISessionFactory CreateSessionFactory(string connectionString)
         {
             return Fluently
                 .Configure()
@@ -18,7 +18,7 @@ namespace SocksDrawer.Mvc6
                 .BuildSessionFactory();
         }
 
-        internal static Action<ISession> CompleteRequest = session =>
+        public static Action<ISession> CompleteRequest = session =>
         {
             if (session.IsDirty())
                 session.Flush();        // deletes won't work without explicit .Flush()

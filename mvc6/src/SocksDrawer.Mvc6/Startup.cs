@@ -13,6 +13,24 @@ namespace SocksDrawer.Mvc6
 {
     public class Startup
     {
+        public static IContainer GetContainer(IConfigurationRoot configuration, Action<ContainerBuilder> builderActions = null)
+        {
+            var builder = new ContainerBuilder();
+
+            // register dependencies
+            builder.Register(context => NhibernateConfig.CreateSessionFactory(configuration.Get<string>("Data:store:ConnectionString")).OpenSession())
+                .As<ISession>()
+                .InstancePerLifetimeScope()
+                .OnRelease(session =>
+                {
+                    NhibernateConfig.CompleteRequest(session);
+
+                    session.Dispose();
+                });
+
+            return builder.Build();
+        }
+
         public Startup(IHostingEnvironment env)
         {
             // Set up configuration sources.
@@ -29,26 +47,7 @@ namespace SocksDrawer.Mvc6
         {
             services.AddMvc();
 
-            //create Autofac container build
-            var builder = new ContainerBuilder();
-
-            // add repos
-            builder.Register(context => NhibernateConfig.CreateSessionFactory(Configuration.Get<string>("Data:store:ConnectionString")).OpenSession())
-                .As<ISession>()
-                .InstancePerLifetimeScope()
-                .OnRelease(session =>
-                {
-                    NhibernateConfig.CompleteRequest(session);
-
-                    session.Dispose();
-                });
-
-            builder.Populate(services);
-
-            //build container
-            var container = builder.Build();
-
-            //return service provider
+            var container = GetContainer(Configuration, builder => builder.Populate(services));
             return container.ResolveOptional<IServiceProvider>();
         }
 
