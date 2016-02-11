@@ -24,13 +24,13 @@ namespace SocksDrawer.Tests
                     // changing the ISession to a singleton so that the two ISession Resolve() calls
                     // produce the same instance such that the transaction includes all test activity.
                     builder.Register(context =>
-                    {
-                        var connString = context.Resolve<LocalDb>().OpenConnection().ConnectionString;
-                        // migrate empty db
-                        //Program.Main(new[] { connString });
+                        {
+                            var connString = context.Resolve<LocalDb>().OpenConnection().ConnectionString;
+                            // migrate empty db
+                            //Program.Main(new[] { connString });
 
-                        return NhibernateConfig.CreateSessionFactory(connString).OpenSession();
-                    })
+                            return NhibernateConfig.CreateSessionFactory(connString).OpenSession();
+                        })
                         .As<ISession>()
                         .SingleInstance();
                 },
