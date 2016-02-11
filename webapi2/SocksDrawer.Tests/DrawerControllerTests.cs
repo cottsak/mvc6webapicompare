@@ -19,13 +19,18 @@ namespace SocksDrawer.Tests
             WebApiConfig.Register,
             builder =>
             {
-                var conn = new LocalDb().OpenConnection();
-                // migrate empty db
-                Program.Main(new[] { conn.ConnectionString });
+                builder.RegisterType<LocalDb>().AsSelf();   // this needs to be registered so it's Disposed properly
 
                 // changing the ISession to a singleton so that the two ISession Resolve() calls
                 // produce the same instance such that the transaction includes all test activity.
-                builder.Register(context => NhibernateConfig.CreateSessionFactory(conn.ConnectionString).OpenSession())
+                builder.Register(context =>
+                    {
+                        var connString = context.Resolve<LocalDb>().OpenConnection().ConnectionString;
+                        // migrate empty db
+                        Program.Main(new[] { connString });
+
+                        return NhibernateConfig.CreateSessionFactory(connString).OpenSession();
+                    })
                     .As<ISession>()
                     .SingleInstance();
             },
