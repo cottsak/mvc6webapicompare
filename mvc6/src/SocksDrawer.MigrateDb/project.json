@@ -1,0 +1,30 @@
+﻿{
+  "version": "1.0.0-*",
+  "description": "SocksDrawer.MigrateDb Console Application",
+  "authors": [ "mattk" ],
+  "tags": [ "" ],
+  "projectUrl": "",
+  "licenseUrl": "",
+
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
+
+  "dependencies": {
+    "dbup": "3.3.2"
+  },
+
+  "commands": {
+    "SocksDrawer.MigrateDb": "SocksDrawer.MigrateDb"
+  },
+
+  "frameworks": {
+    "dnx451": {
+      "frameworkAssemblies": {
+        "System.Data": "4.0.0.0"
+      }
+    }
+  },
+
+  "resource": ["scripts"]
+}

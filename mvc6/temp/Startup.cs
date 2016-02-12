@@ -1,44 +1,30 @@
 ﻿using System;
-using Autofac;
-using Autofac.Extensions.DependencyInjection;
+using System.Collections.Generic;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Identity;
+using Microsoft.Data.Entity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NHibernate;
-using ILoggerFactory = Microsoft.Extensions.Logging.ILoggerFactory;
+using WcoApi.Authentication;
+using WcoApi.Controllers;
+using WcoApi.Domain;
+using WcoApi.Domain.Permissions;
 
-namespace SocksDrawer.Mvc6
+namespace WcoApi
 {
     public class Startup
     {
-        public static IContainer GetContainer(IConfigurationRoot configuration, Action<ContainerBuilder> builderActions = null)
-        {
-            var builder = new ContainerBuilder();
+        public Startup() : this(new KeyValuePair<string, string>[0]) { }
 
-            // register dependencies
-            builder.Register(context => NhibernateConfig.CreateSessionFactory(configuration.Get<string>("Data:store:ConnectionString")).OpenSession())
-                .As<ISession>()
-                .InstancePerLifetimeScope()
-                .OnRelease(session =>
-                {
-                    NhibernateConfig.CompleteRequest(session);
-
-                    session.Dispose();
-                });
-
-            builderActions?.Invoke(builder);
-
-            return builder.Build();
-        }
-
-        public Startup(IHostingEnvironment env)
+        public Startup(params KeyValuePair<string, string>[] configOverrides)
         {
             // Set up configuration sources.
             var builder = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
-                .AddEnvironmentVariables();
+                .AddEnvironmentVariables()
+                .AddInMemoryCollection(configOverrides);
             Configuration = builder.Build();
         }
 
@@ -48,26 +34,43 @@ namespace SocksDrawer.Mvc6
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+            services.AddSwaggerGen();
+            services
+                .AddEntityFramework()
+                .AddSqlServer()
+                .AddDbContext<PortalDbContext>(options => options.UseSqlServer(Configuration["ConnectionString"]));
 
-            var container = GetContainer(Configuration, builder => builder.Populate(services));
-            return container.ResolveOptional<IServiceProvider>();
+            services
+                .AddIdentity<User, Role>()
+                .AddDefaultTokenProviders();
+
+            services.AddScoped<IPoliciesRepository, PoliciesRepository>();
+            services.AddScoped<IUserStore<User>, UserStore>();
+            services.AddScoped<IRoleStore<Role>, RoleStore>();
+
+            return services.BuildServiceProvider();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            app.UseSwaggerGen();
+            app.UseSwaggerUi();
+
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
             app.UseIISPlatformHandler();
+            app.UseDeveloperExceptionPage();
 
             app.UseStaticFiles();
+            app.UseIdentity();
 
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    template: "{controller}/{action=Index}/{id?}");
             });
         }
 

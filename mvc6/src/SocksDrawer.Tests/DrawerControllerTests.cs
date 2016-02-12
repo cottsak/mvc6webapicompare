@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Net;
+using System.Net.Http;
+using Autofac;
 using ControllerTests;
 using NHibernate;
-using NHibernate.Linq;
 using Shouldly;
+using SocksDrawer.MigrateDb;
 using SocksDrawer.Mvc6;
 using SocksDrawer.Mvc6.Models;
 using Xunit;
-using Autofac;
 
 namespace SocksDrawer.Tests
 {
@@ -27,7 +27,7 @@ namespace SocksDrawer.Tests
                         {
                             var connString = context.Resolve<LocalDb>().OpenConnection().ConnectionString;
                             // migrate empty db
-                            //Program.Main(new[] { connString });
+                            Program.Main(new[] { connString });
 
                             return NhibernateConfig.CreateSessionFactory(connString).OpenSession();
                         })
@@ -63,7 +63,8 @@ namespace SocksDrawer.Tests
             twoPairs.ToList().ForEach(p => Session.Save(p));
             Session.Flush();
 
-            var pairs = Get("api/drawer/socks").BodyAs<IEnumerable<SocksPair>>();
+            var response = Get("api/drawer/socks");
+            var pairs = response.BodyAs<IEnumerable<SocksPair>>();
 
             pairs.Count().ShouldBe(2);
             pairs.ShouldAllBe(p => p.Colour == SocksColour.Black);
