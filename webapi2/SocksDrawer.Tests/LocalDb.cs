@@ -51,7 +51,6 @@ namespace SocksDrawer.Tests
             {
                 connection.Open();
                 var cmd = connection.CreateCommand();
-                //DetachDatabase();
                 cmd.CommandText = String.Format("CREATE DATABASE {0} ON (NAME = N'{0}', FILENAME = '{1}')", DatabaseName, DatabaseMdfPath);
                 cmd.ExecuteNonQuery();
             }
