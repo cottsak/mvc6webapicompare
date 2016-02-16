@@ -7,11 +7,10 @@ namespace SocksDrawer.Tests.Infrastructure
 {
     public static class TestExtensions
     {
-        public static async Task<HttpResponseMessage> PostJsonAsync<T>(this HttpClient client, string requestUri, T obj)
+        public static async Task<HttpResponseMessage> PostJsonAsync(this HttpClient client, string requestUri, object content)
         {
-            var param = JsonConvert.SerializeObject(obj);
-            var contentPost = new StringContent(param, Encoding.UTF8, "application/json");
-            return await client.PostAsync(requestUri, contentPost);
+            var postContent = new StringContent(JsonConvert.SerializeObject(content), Encoding.UTF8, "application/json");
+            return await client.PostAsync(requestUri, postContent);
         }
 
         public static T BodyAs<T>(this HttpResponseMessage response)

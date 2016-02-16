@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
+using System.Net;
 using System.Threading.Tasks;
+using NHibernate.Linq;
 using Shouldly;
 using SocksDrawer.Mvc6.Models;
 using SocksDrawer.Tests.Infrastructure;
@@ -11,19 +12,26 @@ namespace SocksDrawer.Tests
 {
     public class DrawerControllerTests
     {
-        //[Fact]
-        //public void WhenPostNewPairToDrawer_ThenResponseIsCreatedAndPairIsOnlyOneInStore()
-        //{
-        //    var response = Post("api/drawer", new { colour = "black" });
+        [Fact]
+        public async Task WhenPostNewPairToDrawer_ThenResponseIsCreatedAndPairIsOnlyOneInStore()
+        {
+            using (var host = new SubCTestHost())
+            {
+                var response = await host.CreateClient().PostJsonAsync("api/drawer", new {colour = "black"});
 
-        //    // assert response is 201
-        //    response.StatusCode.ShouldBe(HttpStatusCode.Created);
-        //    // assert pair is in store by itself
-        //    var pairFromStore = Session.Query<SocksPair>().Single();
-        //    pairFromStore.Id.ShouldNotBe(0);
-        //    pairFromStore.Colour.ShouldBe(SocksColour.Black);
-        //}
+                // assert response is 201
+                response.StatusCode.ShouldBe(HttpStatusCode.Created);
+                response.Headers.Location.ToString().ShouldContain("api/drawer");
+                // assert pair is in store by itself
+                var pairFromStore = host.GetSession().Query<SocksPair>().Single();
+                pairFromStore.Id.ShouldNotBe(0);
+                pairFromStore.Colour.ShouldBe(SocksColour.Black);
+            }
+        }
+    }
 
+    public class AnotherTestCollection      // only doing this for parallel xunit tests
+    {
         [Fact]
         public async Task GivenTwoBlackPairsInStore_WhenGetAllPairs_ThenTwoAreReturned()
         {
@@ -34,7 +42,7 @@ namespace SocksDrawer.Tests
                 twoPairs.ToList().ForEach(p => session.Save(p));
                 session.Flush();
 
-                var pairs = (await  host.CreateClient().GetAsync("api/drawer/socks")).BodyAs<IEnumerable<SocksPair>>();
+                var pairs = (await host.CreateClient().GetAsync("api/drawer/socks")).BodyAs<IEnumerable<SocksPair>>();
 
                 pairs.Count().ShouldBe(2);
                 pairs.ShouldAllBe(p => p.Colour == SocksColour.Black);

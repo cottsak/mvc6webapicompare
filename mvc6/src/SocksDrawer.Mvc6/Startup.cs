@@ -66,13 +66,8 @@ namespace SocksDrawer.Mvc6
             app.UseIISPlatformHandler();
 
             app.UseStaticFiles();
-
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
-            });
+           
+            app.UseMvc();
         }
 
         // Entry point for the application.
