@@ -20,9 +20,11 @@ namespace SocksDrawer.Mvc6.Controllers
         }
 
         [HttpGet("socks")]
-        public IEnumerable<SocksPair> Get()
+        public IEnumerable<object> Get()
         {
-            return _session.Query<SocksPair>().ToList();
+            return _session.Query<SocksPair>()
+                .Select(p => new { id = p.Id, colour = p.Colour.ToString() })
+                .ToList();
         }
 
         [HttpGet("{id}")]
