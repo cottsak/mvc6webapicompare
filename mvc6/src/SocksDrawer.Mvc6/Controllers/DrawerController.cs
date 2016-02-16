@@ -41,5 +41,16 @@ namespace SocksDrawer.Mvc6.Controllers
 
             return Created($"api/drawer/{newSocksPair.Id}", newSocksPair);
         }
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            var pairToDelete = _session.Query<SocksPair>().SingleOrDefault(p => p.Id == id);
+            if (pairToDelete == null)
+                return HttpNotFound();
+
+            _session.Delete(pairToDelete);
+            return Ok();
+        }
     }
 }
