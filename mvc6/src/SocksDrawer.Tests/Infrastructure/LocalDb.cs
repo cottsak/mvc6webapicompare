@@ -5,7 +5,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.Dnx.Runtime;
 
-namespace SocksDrawer.Tests
+namespace SocksDrawer.Tests.Infrastructure
 {
     public class LocalDb : IDisposable
     {
@@ -35,7 +35,6 @@ namespace SocksDrawer.Tests
 
         private void CreateDatabase()
         {
-            //var localPath = Assembly.GetExecutingAssembly().Location;
             var localPath = ProjectRootResolver.ResolveRootDirectory(Directory.GetCurrentDirectory());
             OutputFolder = Path.Combine(Path.GetDirectoryName(localPath), DatabaseDirectory);
             var mdfFilename = string.Format("{0}.mdf", DatabaseName);

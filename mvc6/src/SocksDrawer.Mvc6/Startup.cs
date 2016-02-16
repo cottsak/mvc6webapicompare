@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNet.Builder;
@@ -18,7 +19,7 @@ namespace SocksDrawer.Mvc6
             var builder = new ContainerBuilder();
 
             // register dependencies
-            builder.Register(context => NhibernateConfig.CreateSessionFactory(configuration.Get<string>("Data:store:ConnectionString")).OpenSession())
+            builder.Register(context => NhibernateConfig.CreateSessionFactory(configuration["ConnectionString"]).OpenSession())
                 .As<ISession>()
                 .InstancePerLifetimeScope()
                 .OnRelease(session =>
@@ -28,15 +29,20 @@ namespace SocksDrawer.Mvc6
                     session.Dispose();
                 });
 
+            builderActions?.Invoke(builder);
+
             return builder.Build();
         }
 
-        public Startup(IHostingEnvironment env)
+        public Startup() : this(new KeyValuePair<string, string>[0]) { }
+
+        public Startup(params KeyValuePair<string, string>[] configOverrides)
         {
             // Set up configuration sources.
             var builder = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
-                .AddEnvironmentVariables();
+                .AddEnvironmentVariables()
+                .AddInMemoryCollection(configOverrides);
             Configuration = builder.Build();
         }
 
@@ -60,7 +66,7 @@ namespace SocksDrawer.Mvc6
             app.UseIISPlatformHandler();
 
             app.UseStaticFiles();
-
+           
             app.UseMvc();
         }
 
