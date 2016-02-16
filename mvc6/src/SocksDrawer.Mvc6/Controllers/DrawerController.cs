@@ -24,6 +24,16 @@ namespace SocksDrawer.Mvc6.Controllers
             return _session.Query<SocksPair>().ToList();
         }
 
+        [HttpGet("{id}")]
+        public IActionResult Get(int id)
+        {
+            var pair = _session.Query<SocksPair>().SingleOrDefault(p => p.Id == id);
+            if (pair == null)
+                return HttpNotFound();
+
+            return Ok(pair);
+        }
+
         public class NewPairDto
         {
             public string Colour { get; set; }

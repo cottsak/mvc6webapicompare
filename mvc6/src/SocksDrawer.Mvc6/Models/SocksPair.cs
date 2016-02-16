@@ -4,9 +4,11 @@ namespace SocksDrawer.Mvc6.Models
 {
     public class SocksPair
     {
-        public SocksPair(SocksColour colour)
+        public SocksPair(SocksColour colour, int? id = null)
         {
             Colour = colour;
+            if (id.HasValue)
+                Id = id.Value;
         }
         protected SocksPair() { }
 

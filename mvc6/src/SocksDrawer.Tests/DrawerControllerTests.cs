@@ -45,10 +45,7 @@ namespace SocksDrawer.Tests
                 pairs.ShouldAllBe(p => p.Colour == SocksColour.Black);
             }
         }
-    }
 
-    public class AnotherTestCollection      // only doing this for parallel xunit tests https://xunit.github.io/docs/running-tests-in-parallel.html
-    {
         [Fact]
         public async Task GivenTwoBlackPairsInStore_WhenDeleteOne_ThenOnlyOneRemains()
         {
@@ -67,7 +64,10 @@ namespace SocksDrawer.Tests
                 session.Query<SocksPair>().SingleOrDefault(p => p.Id == pairTwo.Id).ShouldBeNull();
             }
         }
+    }
 
+    public class AnotherTestCollection      // only doing this for parallel xunit tests https://xunit.github.io/docs/running-tests-in-parallel.html
+    {
         [Fact]
         public async Task GivenOnePairInStore_WhenGetById_ThenReturnOnlyTheOne()
         {
