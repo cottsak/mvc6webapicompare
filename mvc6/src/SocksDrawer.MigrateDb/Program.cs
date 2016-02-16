@@ -11,7 +11,7 @@ namespace SocksDrawer.MigrateDb
         {
             var connectionString =
                 args.FirstOrDefault()
-                ?? "Server=(local)\\SqlExpress; Database=MyApp; Trusted_connection=true";
+                ?? "Data Source=.\\sqlexpress;Initial Catalog=SocksDrawer.Mvc6;Integrated Security=True";
 
             var upgrader =
                 DeployChanges.To

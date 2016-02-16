@@ -5,7 +5,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.Dnx.Runtime;
 
-namespace SocksDrawer.Tests
+namespace SocksDrawer.Tests.Infrastructure
 {
     public class LocalDb : IDisposable
     {

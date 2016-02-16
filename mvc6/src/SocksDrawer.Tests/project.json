@@ -15,6 +15,7 @@
     "Microsoft.Dnx.Runtime": "1.0.0-rc1-final",
     "SocksDrawer.MigrateDb": "1.0.0-*",
     "NSubstitute": "1.8.1",
+    "Microsoft.AspNet.TestHost": "1.0.0-rc1-final"
   },
   "commands": {
     "test": "xunit.runner.dnx"

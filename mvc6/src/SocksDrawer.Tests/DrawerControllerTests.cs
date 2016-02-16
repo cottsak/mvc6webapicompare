@@ -1,48 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using Autofac;
-using ControllerTests;
-using NHibernate;
+using System.Threading.Tasks;
 using Shouldly;
-using SocksDrawer.MigrateDb;
-using SocksDrawer.Mvc6;
 using SocksDrawer.Mvc6.Models;
+using SocksDrawer.Tests.Infrastructure;
 using Xunit;
 
 namespace SocksDrawer.Tests
 {
-    public class DrawerControllerTests : ApiControllerTestBase<ISession>
+    public class DrawerControllerTests
     {
-        public DrawerControllerTests() : base(new ApiTestSetup<ISession>(
-            Startup.GetContainer(null),     // shouldn't cause a NRE because we're replacing the ISession rego so the delegate should never be invoked
-            configuration => { },
-            builder =>
-                {
-                    builder.RegisterType<LocalDb>().AsSelf();   // this needs to be registered so it's Disposed properly
-
-                    // changing the ISession to a singleton so that the two ISession Resolve() calls
-                    // produce the same instance such that the transaction includes all test activity.
-                    builder.Register(context =>
-                        {
-                            var connString = context.Resolve<LocalDb>().OpenConnection().ConnectionString;
-                            // migrate empty db
-                            Program.Main(new[] { connString });
-
-                            return NhibernateConfig.CreateSessionFactory(connString).OpenSession();
-                        })
-                        .As<ISession>()
-                        .SingleInstance();
-                },
-            session => session.BeginTransaction(),
-            session => session.Transaction.Dispose(), // tear down transaction to release locks
-            session =>
-                {
-                    NhibernateConfig.CompleteRequest(session);
-                    session.Clear(); // this is to ensure we don't get ghost results from the NHibernate cache  
-                }))
-        { }
-
         //[Fact]
         //public void WhenPostNewPairToDrawer_ThenResponseIsCreatedAndPairIsOnlyOneInStore()
         //{
@@ -57,17 +24,21 @@ namespace SocksDrawer.Tests
         //}
 
         [Fact]
-        public void GivenTwoBlackPairsInStore_WhenGetAllPairs_ThenTwoAreReturned()
+        public async Task GivenTwoBlackPairsInStore_WhenGetAllPairs_ThenTwoAreReturned()
         {
-            var twoPairs = new[] { new SocksPair(SocksColour.Black), new SocksPair(SocksColour.Black), };
-            twoPairs.ToList().ForEach(p => Session.Save(p));
-            Session.Flush();
+            using (var host = new SubCTestHost())
+            {
+                var session = host.GetSession();
+                var twoPairs = new[] { new SocksPair(SocksColour.Black), new SocksPair(SocksColour.Black), };
+                twoPairs.ToList().ForEach(p => session.Save(p));
+                session.Flush();
 
-            var response = Get("api/drawer/socks");
-            var pairs = response.BodyAs<IEnumerable<SocksPair>>();
+                var response = await  host.CreateClient().GetAsync("api/drawer/socks");
+                var pairs = response.BodyAs<IEnumerable<SocksPair>>();
 
-            pairs.Count().ShouldBe(2);
-            pairs.ShouldAllBe(p => p.Colour == SocksColour.Black);
+                pairs.Count().ShouldBe(2);
+                pairs.ShouldAllBe(p => p.Colour == SocksColour.Black);
+            }
         }
     }
 }
