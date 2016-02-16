@@ -38,7 +38,6 @@ namespace SocksDrawer.Mvc6.Controllers
             //    return Content(HttpStatusCode.Forbidden, "Maximum of 6 white pairs in the drawer at one time.");
 
             _session.Save(newSocksPair);
-            _session.Flush();
 
             return Created($"api/drawer/{newSocksPair.Id}", newSocksPair);
         }
