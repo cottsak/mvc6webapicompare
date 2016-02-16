@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Shouldly;
 using SocksDrawer.Mvc6.Models;
@@ -33,8 +34,7 @@ namespace SocksDrawer.Tests
                 twoPairs.ToList().ForEach(p => session.Save(p));
                 session.Flush();
 
-                var response = await  host.CreateClient().GetAsync("api/drawer/socks");
-                var pairs = response.BodyAs<IEnumerable<SocksPair>>();
+                var pairs = (await  host.CreateClient().GetAsync("api/drawer/socks")).BodyAs<IEnumerable<SocksPair>>();
 
                 pairs.Count().ShouldBe(2);
                 pairs.ShouldAllBe(p => p.Colour == SocksColour.Black);
