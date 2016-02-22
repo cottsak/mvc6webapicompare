@@ -17,19 +17,17 @@ using Program = SocksDrawer.MigrateDb.Program;
 
 namespace SocksDrawer.Tests.Infrastructure
 {
-    public class SubCTestHost : IDisposable
+    public class LocalDbSubCTest : IDisposable
     {
         readonly LocalDb _localDb;
-        private readonly Lazy<ISession> _session = null;
+        private readonly Lazy<ISession> _session;
+        private readonly Lazy<HttpClient> _httpClient;
 
-        public TestServer Server { get; set; }
-
-        public SubCTestHost()
+        public LocalDbSubCTest()
         {
             _localDb = new LocalDb();
             var connectionString = _localDb.OpenConnection().ConnectionString;
             Program.Main(new[] { connectionString });
-            Server = CreateTestServer(connectionString);
 
             _session = new Lazy<ISession>(() =>
             {
@@ -40,6 +38,8 @@ namespace SocksDrawer.Tests.Infrastructure
                     .BuildSessionFactory()
                     .OpenSession();
             });
+
+            _httpClient = new Lazy<HttpClient>(() => CreateTestServer(connectionString).CreateClient());
         }
 
         public static TestServer CreateTestServer(string connectionString)
@@ -54,12 +54,8 @@ namespace SocksDrawer.Tests.Infrastructure
             }, services => startup.ConfigureServices(services));
         }
 
-        public HttpClient CreateClient()
-        {
-            return Server.CreateClient();
-        }
-
         public ISession Session => _session.Value;
+        public HttpClient Client => _httpClient.Value;
 
         public void Dispose()
         {
