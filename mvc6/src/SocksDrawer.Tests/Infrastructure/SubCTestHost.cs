@@ -11,17 +11,27 @@ namespace SocksDrawer.Tests.Infrastructure
 {
     public class SubCTestHost : IDisposable
     {
-        LocalDb _localDb;
+        readonly LocalDb _localDb;
+        private readonly Lazy<ISession> _session = null;
 
-        public string ConnectionString { get; private set; }
         public TestServer Server { get; set; }
 
         public SubCTestHost()
         {
             _localDb = new LocalDb();
-            ConnectionString = _localDb.OpenConnection().ConnectionString;
-            Program.Main(new [] { ConnectionString });
-            Server = Create.TestServer(ConnectionString);
+            var connectionString = _localDb.OpenConnection().ConnectionString;
+            Program.Main(new[] { connectionString });
+            Server = Create.TestServer(connectionString);
+
+            _session = new Lazy<ISession>(() =>
+            {
+                return Fluently
+                    .Configure()
+                    .Database(() => MsSqlConfiguration.MsSql2012.ConnectionString(connectionString))
+                    .Mappings(m => m.FluentMappings.AddFromAssemblyOf<SocksPair>())
+                    .BuildSessionFactory()
+                    .OpenSession();
+            });
         }
 
         public HttpClient CreateClient()
@@ -29,15 +39,7 @@ namespace SocksDrawer.Tests.Infrastructure
             return Server.CreateClient();
         }
 
-        public ISession GetSession()
-        {
-            return Fluently
-                .Configure()
-                .Database(() => MsSqlConfiguration.MsSql2012.ConnectionString(ConnectionString))
-                .Mappings(m => m.FluentMappings.AddFromAssemblyOf<SocksPair>())
-                .BuildSessionFactory()
-                .OpenSession();
-        }
+        public ISession Session => _session.Value;
 
         public void Dispose()
         {

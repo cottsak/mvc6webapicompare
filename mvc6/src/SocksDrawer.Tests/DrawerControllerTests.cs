@@ -23,7 +23,7 @@ namespace SocksDrawer.Tests
                 response.StatusCode.ShouldBe(HttpStatusCode.Created);
                 response.Headers.Location.ToString().ShouldContain("api/drawer");
                 // assert pair is in store by itself
-                var pairFromStore = host.GetSession().Query<SocksPair>().Single();
+                var pairFromStore = host.Session.Query<SocksPair>().Single();
                 pairFromStore.Id.ShouldNotBe(0);
                 pairFromStore.Colour.ShouldBe(SocksColour.Black);
             }
@@ -34,10 +34,9 @@ namespace SocksDrawer.Tests
         {
             using (var host = new SubCTestHost())
             {
-                var session = host.GetSession();
                 var twoPairs = new[] { new SocksPair(SocksColour.Black), new SocksPair(SocksColour.Black), };
-                twoPairs.ToList().ForEach(p => session.Save(p));
-                session.Flush();
+                twoPairs.ToList().ForEach(p => host.Session.Save(p));
+                host.Session.Flush();
 
                 var pairs = (await host.CreateClient().GetAsync("api/drawer/socks")).BodyAs<IEnumerable<SocksPair>>();
 
@@ -51,17 +50,16 @@ namespace SocksDrawer.Tests
         {
             using (var host = new SubCTestHost())
             {
-                var session = host.GetSession();
-                session.Save(new SocksPair(SocksColour.Black));
+                host.Session.Save(new SocksPair(SocksColour.Black));
                 var pairTwo = new SocksPair(SocksColour.Black);
-                session.Save(pairTwo);
-                session.Flush();
+                host.Session.Save(pairTwo);
+                host.Session.Flush();
 
                 var response = await host.CreateClient().DeleteAsync($"api/drawer/{pairTwo.Id}");
 
                 response.StatusCode.ShouldBe(HttpStatusCode.OK);
-                session.Query<SocksPair>().Count().ShouldBe(1);
-                session.Query<SocksPair>().SingleOrDefault(p => p.Id == pairTwo.Id).ShouldBeNull();
+                host.Session.Query<SocksPair>().Count().ShouldBe(1);
+                host.Session.Query<SocksPair>().SingleOrDefault(p => p.Id == pairTwo.Id).ShouldBeNull();
             }
         }
     }
@@ -73,10 +71,9 @@ namespace SocksDrawer.Tests
         {
             using (var host = new SubCTestHost())
             {
-                var session = host.GetSession();
                 var pair = new SocksPair(SocksColour.White);
-                session.Save(pair);
-                session.Flush();
+                host.Session.Save(pair);
+                host.Session.Flush();
 
                 var response = (await host.CreateClient().GetAsync($"api/drawer/{pair.Id}")).BodyAs<SocksPair>();
 
@@ -90,7 +87,6 @@ namespace SocksDrawer.Tests
         {
             using (var host = new SubCTestHost())
             {
-                var session = host.GetSession();
                 var allPairsInStore = new[]
                     {
                         new SocksPair(SocksColour.Black),
@@ -101,8 +97,8 @@ namespace SocksDrawer.Tests
                         new SocksPair(SocksColour.White),
                         new SocksPair(SocksColour.White),
                     };
-                allPairsInStore.ToList().ForEach(p => session.Save(p));
-                session.Flush();
+                allPairsInStore.ToList().ForEach(p => host.Session.Save(p));
+                host.Session.Flush();
 
                 var response = await host.CreateClient().PostJsonAsync("api/drawer", new { colour = "white" });
 
