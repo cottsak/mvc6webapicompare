@@ -46,7 +46,7 @@ namespace SocksDrawer.Tests
         }
 
         [Fact]
-        public async Task GivenTwoBlackPairsInStore_WhenDeleteOne_ThenOnlyOneRemains()
+        public void GivenTwoBlackPairsInStore_WhenDeleteOne_ThenOnlyOneRemains()
         {
             using (var host = new SubCTestHost())
             {
@@ -55,7 +55,7 @@ namespace SocksDrawer.Tests
                 host.Session.Save(pairTwo);
                 host.Session.Flush();
 
-                var response = await host.CreateClient().DeleteAsync($"api/drawer/{pairTwo.Id}");
+                var response =  host.CreateClient().DeleteAsync($"api/drawer/{pairTwo.Id}").Result;
 
                 response.StatusCode.ShouldBe(HttpStatusCode.OK);
                 host.Session.Query<SocksPair>().Count().ShouldBe(1);
