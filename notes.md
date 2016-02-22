@@ -14,13 +14,13 @@
 
 ## Cons
 
-* `project.json` can take a little getting used to. We dropped the `dnxcore50` support as it was making it hard to pull in other packages that are not built against .NET Core. Understaning how DNX and non-DNX packages work takes a little time.
+* `project.json` can take a little getting used to. We dropped the `dnxcore50` support as it was making it hard to pull in other packages that are not built against .NET Core. Understanding how DNX and non-DNX packages work takes a little time.
 * Testing is not as straightforward. The easiest way to get up and running is to use xunit on the command line.
     * However this does require some setup: `dnvm setup`, `dnvm use <>` then to run tests `dnx test` as defined in `project.json`
     * use `dnvm use 1.0.0-rc1-update1 -runtime clr -architecture x86 -p` to stop it only setting it for the current console.
 * I'm used to NCrunch for fast test feedback (particularly with [Sub-c tests](https://github.com/cottsak/ControllerTests)) and reproducing this with DNX was not easy or ideal.
     * `dnx-watch` was the closest experience on the command line. [Some hackery was needed](http://hammerproject.com/post/139158523874/ncrunch-like-test-automation-in-mvc6dnx-for) in Visual Studio to get this working quickly. This was a little painful to get set up thanks to the wonderful world of [`dnvm`](https://github.com/aspnet/dnvm) and `dnu` (another small learning curve).
-    * Runing these tests on the command line does not give you debug support however. I had to resort to the VS15 test runner which happens to support xunit thankfully to debug and step into tests.
+    * Running these tests on the command line does not give you debug support however. I had to resort to the VS15 test runner which happens to support xunit thankfully to debug and step into tests.
     * Parallel test runs using `dnx-watch` or the VS15 test runner are limited to the ['Collection' scope as defined by xunit's parallel support](https://xunit.github.io/docs/running-tests-in-parallel.html). NCrunch makes properly isolated tests so much more efficient by giving me more parallelism control, which I know will save me time the more tests I write.
 * getting a NCrunch-like experience requires the `dnx-watch` command. I used `dnu commands install Microsoft.Dnx.Watcher --fallbacksource https://myget.org/F/aspnetvnext/api/v3/index.json` to get it to work (from https://github.com/aspnet/dnx-watch)
 * Sometimes VS won't rebuild correctly. Example: with changing dbup migration scripts and then only a Clean and Rebuild All fixed the issue. Seems the VS build engine that detects project changes might ignore files defined as `"resource": ["scripts"]` in the `project.json` file. bug?
